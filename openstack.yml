@@ -1,18 +1,47 @@
 - hosts: all
   become: true
-  pre_tasks:
+  tasks:
+    # Install necessary packages for Cinder
+    - name: Installing Cinder
+      apt: 
+        name:
+          - cinder-volume
+          - python3-mysqldb
+        state: latest
+        update_cache: yes
+
+    # Install Apache2 web server for OpenStack Dashboard
+    - name: Installing Apache2
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+
+    # Install Horizon (OpenStack Dashboard)
+    - name: Installing Horizon (openstack-dashboard)
+      apt:
+        name:
+          - openstack-dashboard
+        state: latest
+        update_cache: yes
+
+    # Install Neutron components
+    - name: Installing Neutron
+      apt:
+        name:
+          - neutron-server
+          - neutron-l3-agent
+          - neutron-plugin-ml2
+          - neutron-dhcp-agent
+          - neutron-linuxbridge-agent
+          - python3-neutronclient
+        state: latest
+        update_cache: yes
+
+    # Reconfigure any packages that may have been partially installed
+    - name: Reconfiguring OpenStack Dashboard package
+      command: dpkg --configure -a
+      ignore_errors: yes
 
 
-  - name: install updates (Ubuntu)
-    tags: always
-    apt:
-      update_cache: yes
-    changed_when: false
-    when: ansible_distribution == "Ubuntu"
 
-- hosts: all
-  become: true
-  roles:
-        - cinder
-        - horizon
-        - neutron
